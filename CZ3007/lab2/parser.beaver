@@ -1,0 +1,132 @@
+// package the generated Java class lives in; no need to change this
+%package "parser";
+
+// name of the generated Java class; no need to change this
+%class "Parser";
+
+
+// no need to change this either
+%embed {:
+	// turn off automated error recovery
+	@Override
+	protected void recoverFromError(Symbol token, TokenStream in) throws java.io.IOException, Exception {
+		super.recoverFromError(new Symbol(0), in);
+	}
+:};
+
+// the list of all terminals; no need to change this
+%terminals MODULE, INT, VOID, IF, ELSE, WHILE, RETURN, BREAK, BOOLEAN, PUBLIC, TRUE, FALSE,
+           INT_LITERAL, STRING_LITERAL, ID, TYPE, IMPORT,
+           PLUS, MINUS, TIMES, DIV, MOD, EQEQ, NEQ, LEQ, GEQ, LT, GT,
+           LBRACKET, RPAREN, COMMA, RCURLY, LCURLY, SEMICOLON, RBRACKET, LPAREN, EQL;
+           
+// declaration of start symbol; no need to change this
+%goal Module;
+
+// temporary declaration, you can remove this once you have written all other rules
+%goal Dummy;
+
+/* TODO: Flesh out the rule for Module, and add rules for other nonterminals. Here is an example
+         of a rule you may want to add:
+         
+   Accessibility = PUBLIC
+		  |
+		  ;
+  */
+
+Module = MODULE ID LCURLY Imports Declarations RCURLY;
+Imports = Imports Import
+	| ;
+Import = IMPORT ID SEMICOLON;
+
+Declarations = Declarations Declaration
+	| ;
+Declaration = Function_Declaration
+	| Field_Declaration
+	| Type_Declaration;
+Function_Declaration = Accessibility_Specifier Type_Name ID LPAREN Parameter_List RPAREN LCURLY Stmts RCURLY;
+Field_Declaration = Accessibility_Specifier Type_Name ID SEMICOLON;
+Type_Declaration = Accessibility_Specifier TYPE ID EQL STRING_LITERAL SEMICOLON;
+
+Accessibility_Specifier = PUBLIC
+	| ;
+Type_Name = Primitive_Type
+	| Array_Type
+	| ID;
+Primitive_Type = VOID
+	| BOOLEAN
+	| INT;
+Array_Type = ID LBRACKET RBRACKET
+	| Primitive_Type LBRACKET RBRACKET
+	| Array_Type LBRACKET RBRACKET;
+None_Parameter_List = Parameter
+	| None_Parameter_List COMMA Parameter;
+Parameter_List = None_Parameter_List
+	| ;
+Parameter = Type_Name ID;
+Stmts = Stmts Stmt
+	| ;
+Stmt = Local_Variable_Declaration
+	| Block_Of_Statements
+	| If_Statement
+	| WHILE LPAREN Expression RPAREN Stmt
+	| BREAK SEMICOLON
+	| Return_Statement
+	| Expression SEMICOLON;
+Local_Variable_Declaration = Type_Name ID SEMICOLON;
+Block_Of_Statements = LCURLY Stmts RCURLY;
+If_Statement = IF LPAREN Expression RPAREN Stmt ELSE Stmt
+	| IF LPAREN Expression RPAREN Stmt;
+Return_Statement = RETURN SEMICOLON
+	| RETURN Expression SEMICOLON;
+Expression = Assignment
+	| Right_Hand_Side;
+Expression_List = Expression
+	| Expression_List COMMA Expression;
+Empty_Expression_List = Expression_List
+	| ;
+	
+Assignment = Left_Hand_Side EQL Expression;
+Left_Hand_Side = ID
+	| Array_Access;
+Array_Access = ID LBRACKET Expression RBRACKET
+	| Array_Access LBRACKET Expression RBRACKET;
+Right_Hand_Side = Arithmetic_Expression
+	| Right_Hand_Side Comparison_Operator Arithmetic_Expression;
+Comparison_Operator = EQEQ
+	| NEQ
+	| LT
+	| LEQ
+	| GT
+	| GEQ;
+Arithmetic_Expression = Arithmetic_Expression Additive_Operator Term
+	| Term;
+Additive_Operator = PLUS
+	| MINUS;
+Term = Term Multiplicative_Operator Factor
+	| Factor;
+Multiplicative_Operator = TIMES
+	| DIV
+	| MOD;
+Factor = MINUS Factor
+	| Primary_Expression;
+Primary_Expression = Left_Hand_Side
+	| Function_Call
+	| Array_Expression
+	| STRING_LITERAL
+	| INT_LITERAL
+	| Boolean_Literal
+	| Parenthesised_Expression;
+
+Function_Call = ID LPAREN Empty_Expression_List RPAREN;
+Array_Expression = LBRACKET Expression_List RBRACKET;
+Boolean_Literal = TRUE
+	| FALSE; 
+Parenthesised_Expression = LPAREN Expression RPAREN;
+
+
+/**/
+
+/* Dummy rule to make the lexer compile. Remove this once you have written all other rules. */	  
+Dummy = MODULE INT VOID IF ELSE WHILE RETURN BREAK BOOLEAN PUBLIC TRUE FALSE INT_LITERAL STRING_LITERAL ID TYPE IMPORT
+           PLUS MINUS TIMES DIV MOD EQEQ NEQ LEQ GEQ LT GT LBRACKET RPAREN COMMA RCURLY LCURLY SEMICOLON RBRACKET LPAREN EQL;
