@@ -1,0 +1,3 @@
+- Computer Networks
+- 2019 semester 1 (Jan to May)
+- Exchange student at NTU
